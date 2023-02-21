@@ -1,0 +1,18 @@
+{
+  "name": "Quickgro app",
+  "version": "1.0.0",
+  "description": "Agro platform",
+  "main": "index.js",
+   "scripts": {
+    "i-backend": "npm i --prefix backend",
+    "i-frontend": "npm i --prefix frontend",
+    "install": "npm run i-backend && npm run i-frontend",
+    "backend": "npm run watch --prefix backend",
+    "frontend": "npm start watch --prefix frontend",
+    "watch": "npm run backend || npm run frontend",
+    "deploy": "npm run build --prefix frontend && npm start --prefix backend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
