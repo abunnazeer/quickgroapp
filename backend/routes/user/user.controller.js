@@ -1,11 +1,14 @@
 // const express = require('express');
 const { promisify } = require('util');
+// const nodemailer = require('nodemailer');
+
 // const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../../models/user/user.model');
 const Profile = require('../../models/user/profile.model');
 const AppError = require('../../utils/appError');
 const catchAsync = require('../../utils/catchAsync');
+const sendEmail = require('../../utils/email');
 
 // function for jwt
 const signToken = id => {
@@ -96,31 +99,56 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-// router.get('/protected', authorize('admin'), async (req, res) => {
-//   res.send('This is an admin-only endpoint');
-// });
+const restrictTo = (...role) => {
+  return (req, res, next) => {
+    if (!role.includes(req.user.role)) {
+      return next(
+        new AppError('You dont have permision to to perform this action', 403)
+      );
+    }
+    next();
+  };
+};
 
-// function authorize(role) {
-//   return (req, res, next) => {
-//     const token = req.headers.authorization;
-//     if (!token) {
-//       return res.status(401).send('Unauthorized');
-//     }
-//     try {
-//       const decoded = jwt.verify(token, 'secret_key');
-//       if (decoded.role !== role) {
-//         return res.status(403).send('Forbidden');
-//       }
-//       next();
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Error authorizing user');
-//     }
-//   };
-// }
+const forgetPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with this email', 404));
+  }
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/reset-password/${resetToken}`;
+  const message = `Forgot your password? Submit a Update request with a new password and passwordConfirm to reset ${resetUrl}.\nif you didn't forget your password please ignore this mail`;
+  // console.log(message);
+
+  try {
+    await sendEmail({
+      email: user.body.email,
+      subject: 'Your password Reset token(valid for min)',
+      message,
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'token sent to email!',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new AppError('there an error sending email', 500));
+  }
+});
+
+const resetPassword = (req, res, next) => {};
 
 module.exports = {
   register,
   login,
   protect,
+  resetPassword,
+  forgetPassword,
+  restrictTo,
 };

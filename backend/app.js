@@ -7,7 +7,6 @@ const globalErrorHandler = require('./controller/error.controller');
 //importing routers
 const userRouter = require('./routes/user/user.routers');
 const productRouter = require('./routes/products/product.routers');
-const AppError = require('./utils/appError');
 
 const app = express();
 app.use(

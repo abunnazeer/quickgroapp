@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Agro platform",
   "main": "index.js",
-   "scripts": {
+  "scripts": {
     "i-backend": "npm i --prefix backend",
     "i-frontend": "npm i --prefix frontend",
     "install": "npm run i-backend && npm run i-frontend",
@@ -14,5 +14,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "nodemailer": "^6.9.1",
+    "nodemailer-smtp-transport": "^2.7.4"
+  }
 }
